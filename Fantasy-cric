@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>IPL Fantasy League</title>
+  <style>
+    body {
+      background-color: #121212;
+      color: #e0e0e0;
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 20px;
+    }
+    h1, h2 {
+      color: #ff9800;
+    }
+    .login, .dashboard {
+      max-width: 600px;
+      margin: auto;
+      padding: 20px;
+      background: #1e1e1e;
+      border-radius: 10px;
+      margin-top: 40px;
+    }
+    select, input, button {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      background: #333;
+      color: white;
+      border: none;
+      border-radius: 5px;
+    }
+    button {
+      background-color: #ff9800;
+      cursor: pointer;
+    }
+    .hidden {
+      display: none;
+    }
+    .player-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .player-list input {
+      width: auto;
+    }
+    .coins {
+      font-weight: bold;
+      color: #4caf50;
+    }
+    .penalty {
+      color: #f44336;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="login">
+    <h1>IPL Fantasy Login</h1>
+    <select id="playerSelect">
+      <option value="" disabled selected>Select your name</option>
+      <option value="player1">Rohit</option>
+      <option value="player2">Ankit</option>
+      <option value="player3">Mehul</option>
+      <option value="player4">Siddharth</option>
+      <option value="player5">Pratik</option>
+    </select>
+    <button onclick="login()">Login</button>
+  </div>
+
+  <div class="dashboard hidden" id="dashboard">
+    <h2>Welcome, <span id="username"></span>!</h2>
+    <p>Coins: <span class="coins" id="coinCount">100</span></p>
+    <p>Today's Match: CSK vs MI (Starts at 7:30 PM)</p>
+
+    <h3>Select Your Team</h3>
+    <form id="teamForm">
+      <label>Select 3 Players:</label>
+      <div class="player-list">
+        <label><input type="checkbox" name="team" value="MS Dhoni"> MS Dhoni</label>
+        <label><input type="checkbox" name="team" value="Rohit Sharma"> Rohit Sharma</label>
+        <label><input type="checkbox" name="team" value="Hardik Pandya"> Hardik Pandya</label>
+        <label><input type="checkbox" name="team" value="Jadeja"> Jadeja</label>
+        <label><input type="checkbox" name="team" value="Ruturaj Gaikwad"> Ruturaj Gaikwad</label>
+        <label><input type="checkbox" name="team" value="Tilak Varma"> Tilak Varma</label>
+      </div>
+      <button type="submit">Submit Team</button>
+    </form>
+
+    <div id="penaltyNotice" class="penalty hidden">
+      You missed today's deadline! -5 coins deducted.
+    </div>
+
+    <h3>Your Fantasy Points: <span id="points">0</span></h3>
+    <button onclick="logout()">Logout</button>
+  </div>
+
+  <script>
+    const coinData = {
+      player1: 100,
+      player2: 100,
+      player3: 100,
+      player4: 100,
+      player5: 100
+    };
+    const submitted = {};
+
+    function login() {
+      const user = document.getElementById('playerSelect').value;
+      if (!user) return alert("Please select your name.");
+
+      localStorage.setItem("currentUser", user);
+      document.querySelector('.login').classList.add('hidden');
+      document.getElementById('dashboard').classList.remove('hidden');
+
+      document.getElementById('username').innerText = user;
+      document.getElementById('coinCount').innerText = coinData[user];
+
+      checkDeadline();
+    }
+
+    function logout() {
+      localStorage.removeItem("currentUser");
+      document.querySelector('.login').classList.remove('hidden');
+      document.getElementById('dashboard').classList.add('hidden');
+    }
+
+    document.getElementById("teamForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+      const user = localStorage.getItem("currentUser");
+      const team = Array.from(document.querySelectorAll("input[name='team']:checked")).map(cb => cb.value);
+
+      if (team.length !== 3) {
+        alert("Please select exactly 3 players.");
+        return;
+      }
+
+      submitted[user] = team;
+      alert("Team submitted successfully!");
+    });
+
+    function checkDeadline() {
+      // Simulate a 30-min-before match time check. Match is at 19:30 (7:30 PM)
+      const now = new Date();
+      const cutoff = new Date();
+      cutoff.setHours(19);
+      cutoff.setMinutes(0); // 30 mins before match
+
+      const user = localStorage.getItem("currentUser");
+      if (now > cutoff && !submitted[user]) {
+        document.getElementById("penaltyNotice").classList.remove("hidden");
+        coinData[user] -= 5;
+        document.getElementById('coinCount').innerText = coinData[user];
+      }
+    }
+  </script>
+</body>
+</html>
